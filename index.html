@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Birthday Surprise · September 23</title>
+<meta name="theme-color" content="#fff6dc">
+<meta name="description" content="A magical birthday surprise — September 23, Manipur time.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ambient background -->
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+<div class="glow g3"></div>
+<canvas id="bgfx"></canvas>
+<div class="warm-wash"></div>
+
+<main>
+  <!-- ============ COUNTDOWN ============ -->
+  <section class="screen" id="countdownScreen">
+    <p class="eyebrow">✦ a little magic is baking ✦</p>
+    <h1 class="title">A Birthday Surprise</h1>
+    <div class="count" role="timer">
+      <div class="card"><span class="num" id="cdD">00</span><span class="lab">days</span></div>
+      <span class="sep">:</span>
+      <div class="card"><span class="num" id="cdH">00</span><span class="lab">hours</span></div>
+      <span class="sep">:</span>
+      <div class="card"><span class="num" id="cdM">00</span><span class="lab">minutes</span></div>
+      <span class="sep">:</span>
+      <div class="card sec"><span class="num" id="cdS">00</span><span class="lab">seconds</span></div>
+    </div>
+    <p class="sub"><span id="istClock">--:--:--</span>&nbsp;·&nbsp;IST&nbsp;Manipur</p>
+    <p class="hint">september 23 · asia/kolkata</p>
+    <button class="peek" id="peekBtn">▶&nbsp;preview the magic</button>
+  </section>
+
+  <!-- ============ CAKE ============ -->
+  <section class="screen off" id="cakeScreen">
+    <div class="stage" id="stage">
+      <div class="rays"></div>
+      <div class="spotlight"></div>
+      <div class="lit-glow"></div>
+      <div class="scene" id="scene">
+        <div class="float"><div class="cake" id="cake">
+          <div class="candles" id="candles"></div>
+          <div class="tier t3"><div class="tier-in"><span class="band"></span></div></div>
+          <div class="tier t2"><div class="tier-in"><span class="name" id="cakeName">Priya</span></div></div>
+          <div class="tier t1"><div class="tier-in"></div></div>
+          <div class="plate"></div>
+          <div class="stem"></div>
+          <div class="foot"></div>
+          <div class="floor-shadow"></div>
+        </div></div>
+        <div class="floor-glow" id="floorGlow"></div>
+      </div>
+      <p class="caption" id="caption"></p>
+      <button class="wish-btn" id="wishBtn">Make a Wish&nbsp;<span>✨</span></button>
+    </div>
+  </section>
+</main>
+
+<!-- ============ MESSAGE ============ -->
+<div id="message" aria-live="polite">
+  <div class="msg">
+    <p class="eyebrow">✦ september 23 · it's official ✦</p>
+    <h2 class="hb" id="hbText">Happy Birthday!</h2>
+    <p class="wish">May all your wishes come true. 🎂✨</p>
+    <div class="runwrap" id="runWrap">
+      <div class="runcard" id="runCard">
+        <div class="runtext" id="runText"></div>
+      </div>
+    </div>
+    <button class="ghost" id="replayBtn">↻ replay the magic</button>
+  </div>
+</div>
+
+<canvas id="fx"></canvas>
+
+<button id="soundBtn" aria-label="toggle sound" aria-pressed="true">
+  <svg class="on-ic" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z"/><path d="M15.5 8.8a4.5 4.5 0 0 1 0 6.4"/><path d="M18 6.3a8 8 0 0 1 0 11.4"/></svg>
+  <svg class="off-ic" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+</button>
+
+<div id="errToast" hidden></div>
+<noscript><div class="nojs">Please enable JavaScript to see the magic ✨</div></noscript>
+
+<script src="js/audio.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/cake.js"></script>
+<script src="js/countdown.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
