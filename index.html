@@ -80,6 +80,31 @@
   </div>
 </div>
 
+<!-- ============ BIAS GALLERY ============ -->
+<div id="gallery" role="dialog" aria-label="Bias gallery" aria-hidden="true">
+  <div class="gal-head">
+    <p class="eyebrow">✦ a tiny collection of your faves ✦</p>
+    <button class="gal-close" id="galClose" aria-label="close gallery">✕</button>
+  </div>
+  <div class="rail-wrap">
+    <button class="rail-nav prev" id="pagePrev" aria-label="previous photos">‹</button>
+    <div class="rail" id="galRail"><div class="track" id="galTrack"></div></div>
+    <button class="rail-nav next" id="pageNext" aria-label="next photos">›</button>
+  </div>
+  <div class="dots" id="galDots"></div>
+  <p class="gal-hint">tap a photo to enlarge · ‹&nbsp;›&nbsp;to flip</p>
+</div>
+
+<!-- ============ PHOTO LIGHTBOX ============ -->
+<div id="lightbox" role="dialog" aria-label="Photo viewer" aria-hidden="true">
+  <figure class="lb-fig">
+    <img id="lbImg" alt="" draggable="false">
+    <figcaption id="lbCap"></figcaption>
+  </figure>
+  <button class="lb-nav prev" id="lbPrev" aria-label="previous photo">‹</button>
+  <button class="lb-nav next" id="lbNext" aria-label="next photo">›</button>
+</div>
+
 <canvas id="fx"></canvas>
 
 <button id="soundBtn" aria-label="toggle sound" aria-pressed="true">
@@ -95,5 +120,6 @@
 <script src="js/cake.js"></script>
 <script src="js/countdown.js"></script>
 <script src="js/main.js"></script>
+<script src="js/gallery.js"></script>
 </body>
 </html>

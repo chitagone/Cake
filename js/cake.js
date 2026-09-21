@@ -226,7 +226,11 @@
     const lines = Array.prototype.slice.call(box.children);
     let i = 0;
     runTimer = setInterval(function () {
-      if (i >= lines.length) { stopRunText(); return; }
+      if (i >= lines.length) {
+        stopRunText();
+        document.dispatchEvent(new CustomEvent('bd:letterDone'));
+        return;
+      }
       const line = lines[i];
       line.classList.add('in');
       /* gently keep the newest line in view */
