@@ -39,7 +39,10 @@
   }
 
   let timer = null, onParty = null, started = false;
+  let fixedNow = null;   // test hook: pretend "now" is a given epoch
   const prev = {};
+
+  function nowMs() { return fixedNow === null ? Date.now() : fixedNow; }
 
   function setNum(el, val) {
     const s = String(val).padStart(2, '0');
@@ -50,7 +53,7 @@
   }
 
   function upd() {
-    const now = Date.now();
+    const now = nowMs();
     if (targetFor(now).mode === 'party') {
       if (!started) { started = true; stop(); if (onParty) onParty(); }
       return;
@@ -70,5 +73,11 @@
   }
   function stop() { clearInterval(timer); timer = null; }
 
-  window.BD_COUNTDOWN = { start: start, stop: stop, targetFor: targetFor };
+  /* testing: force the countdown clock to a fixed epoch (pass null to clear) */
+  function setNow(ms) {
+    fixedNow = (ms === null || ms === undefined) ? null : ms;
+    if (!started && timer !== null) upd();
+  }
+
+  window.BD_COUNTDOWN = { start: start, stop: stop, targetFor: targetFor, setNow: setNow };
 })();

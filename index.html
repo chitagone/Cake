@@ -49,8 +49,9 @@
       <div class="scene" id="scene">
         <div class="float"><div class="cake" id="cake">
           <div class="candles" id="candles"></div>
+          <div class="tier t4"><div class="tier-in"></div></div>
           <div class="tier t3"><div class="tier-in"><span class="band"></span></div></div>
-          <div class="tier t2"><div class="tier-in"><span class="name" id="cakeName">Priya</span></div></div>
+          <div class="tier t2"><div class="tier-in"></div></div>
           <div class="tier t1"><div class="tier-in"></div></div>
           <div class="plate"></div>
           <div class="stem"></div>
@@ -76,8 +77,32 @@
         <div class="runtext" id="runText"></div>
       </div>
     </div>
+    <button class="voice-btn" id="voiceBtn" type="button" hidden>▶&nbsp;hear my wish&nbsp;<span>🎙️</span></button>
     <button class="ghost" id="replayBtn">↻ replay the magic</button>
   </div>
+</div>
+
+<!-- ============ BALLOON POP ============ -->
+<div id="balloons" role="dialog" aria-label="Balloon pop game" aria-hidden="true">
+  <p class="eyebrow">✦ pop them all to unlock your surprise ✦</p>
+  <div class="word" id="balloonWord" aria-live="polite"></div>
+  <div class="balloon-field" id="balloonField"></div>
+  <p class="bpop-hint" id="bpopHint">tap every balloon 🎈</p>
+</div>
+
+<!-- ============ GIFT / COUPONS ============ -->
+<div id="gift" role="dialog" aria-label="A gift for you" aria-hidden="true">
+  <p class="eyebrow">✦ one more thing, just for you ✦</p>
+  <button class="gift-box" id="giftBox" type="button" aria-label="open your gift">
+    <span class="box"></span>
+    <span class="ribbon-v"></span>
+    <span class="ribbon-h"></span>
+    <span class="lid"></span>
+    <span class="bow"></span>
+  </button>
+  <p class="gift-hint" id="giftHint">tap to open your gift 🎁</p>
+  <div class="coupons" id="coupons"></div>
+  <button class="gift-close" id="giftDone" type="button" hidden>keep them safe&nbsp;♡</button>
 </div>
 
 <!-- ============ BIAS GALLERY ============ -->
@@ -115,11 +140,17 @@
 <div id="errToast" hidden></div>
 <noscript><div class="nojs">Please enable JavaScript to see the magic ✨</div></noscript>
 
+<!-- background music (your song) + optional voice note (drop MP3/wish.mp3) -->
+<audio id="bgMusic" loop preload="none" src="MP3/Favorit%20music%20background.mp3"></audio>
+<audio id="voiceNote" preload="auto" src="MP3/wish.mp3"></audio>
+
 <script src="js/audio.js"></script>
 <script src="js/fx.js"></script>
 <script src="js/cake.js"></script>
 <script src="js/countdown.js"></script>
 <script src="js/main.js"></script>
 <script src="js/gallery.js"></script>
+<script src="js/balloons.js"></script>
+<script src="js/gift.js"></script>
 </body>
 </html>

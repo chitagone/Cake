@@ -131,17 +131,95 @@
     return '<svg class="drip" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true"><path d="' + d + '" fill="' + fill + '"/></svg>';
   }
 
+  /* Photo cake: ONE photo is mapped across the whole cake (all tiers),
+     pouring over them like an edible print. focusX/focusY pick which
+     part of the photo stays in frame: 0 = top/left, .5 = centre,
+     1 = bottom/right. Lower focusY = higher up the picture = faces. */
+  const CAKE_PHOTO = { src: 'images/1.jpg', focusX: .5, focusY: .12 };
+  let photoImg = null, photoNat = null, photoResizeT = null;
+
+  function loadPhoto(cb) {
+    if (!CAKE_PHOTO) return;
+    if (photoImg) { cb(); return; }
+    photoImg = new Image();
+    photoImg.onload = function () {
+      photoNat = { w: photoImg.naturalWidth || 1, h: photoImg.naturalHeight || 1 };
+      cb();
+    };
+    photoImg.onerror = function () { photoImg = null; };
+    photoImg.src = CAKE_PHOTO.src;
+  }
+
+  function applyCakePhoto() {
+    const clear = document.querySelectorAll('.tier-in.photo');
+    clear.forEach(function (el) {
+      el.classList.remove('photo');
+      el.style.backgroundImage = '';
+      el.style.backgroundSize = '';
+      el.style.backgroundPosition = '';
+      el.style.backgroundRepeat = '';
+    });
+    if (!CAKE_PHOTO) return;
+
+    const tiers = ['.t1', '.t2', '.t3', '.t4'].map(function (s) { return document.querySelector(s); });
+    if (tiers.some(function (t) { return !t; })) return;
+    const inns = tiers.map(function (t) { return t.querySelector('.tier-in'); });
+    if (inns.some(function (i) { return !i; })) return;
+
+    loadPhoto(function () {
+      /* union box of all tiers, in the cake's own (unscaled) space */
+      const r = tiers.map(function (t) {
+        return { l: t.offsetLeft, t: t.offsetTop, w: t.offsetWidth, h: t.offsetHeight };
+      });
+      const left = Math.min.apply(null, r.map(function (x) { return x.l; }));
+      const top = Math.min.apply(null, r.map(function (x) { return x.t; }));
+      const right = Math.max.apply(null, r.map(function (x) { return x.l + x.w; }));
+      const bottom = Math.max.apply(null, r.map(function (x) { return x.t + x.h; }));
+      const W = right - left, H = bottom - top;
+      if (!W || !H) return;
+
+      /* cover-fit the photo to the whole cake, then slice per tier */
+      const nw = photoNat ? photoNat.w : 1, nh = photoNat ? photoNat.h : 1;
+      const scale = Math.max(W / nw, H / nh);
+      const drawW = nw * scale, drawH = nh * scale;
+      const fx = CAKE_PHOTO.focusX != null ? CAKE_PHOTO.focusX : .5;
+      const fy = CAKE_PHOTO.focusY != null ? CAKE_PHOTO.focusY : .5;
+      const baseX = -(drawW - W) * fx, baseY = -(drawH - H) * fy;
+
+      tiers.forEach(function (t, i) {
+        const inn = inns[i];
+        inn.classList.add('photo');
+        inn.style.backgroundImage =
+          "linear-gradient(180deg,rgba(255,246,214,.12),rgba(170,110,10,.20)),url('" +
+          CAKE_PHOTO.src + "')";
+        inn.style.backgroundSize = '100% 100%,' + drawW.toFixed(1) + 'px ' + drawH.toFixed(1) + 'px';
+        inn.style.backgroundPosition = '0 0,' +
+          (baseX - (r[i].l - left)).toFixed(1) + 'px ' +
+          (baseY - (r[i].t - top)).toFixed(1) + 'px';
+        inn.style.backgroundRepeat = 'no-repeat,no-repeat';
+      });
+    });
+  }
+
+  window.addEventListener('resize', function () {
+    clearTimeout(photoResizeT);
+    photoResizeT = setTimeout(applyCakePhoto, 180);
+  });
+
   function decorateCake() {
     const t1 = document.querySelector('.t1 .tier-in');
     const t2 = document.querySelector('.t2 .tier-in');
     const t3 = document.querySelector('.t3 .tier-in');
-    if (!t1 || !t2 || !t3) return;
+    const t4 = document.querySelector('.t4 .tier-in');
+    if (!t1 || !t2 || !t3 || !t4) return;
     t1.querySelectorAll('.drip,.pearl').forEach(function (e) { e.remove(); });
     t2.querySelectorAll('.drip').forEach(function (e) { e.remove(); });
     t3.querySelectorAll('.drip').forEach(function (e) { e.remove(); });
+    t4.querySelectorAll('.drip').forEach(function (e) { e.remove(); });
     t1.insertAdjacentHTML('beforeend', dripSVG(300, '#ffc22e'));
     t2.insertAdjacentHTML('beforeend', dripSVG(215, '#ffd23f'));
     t3.insertAdjacentHTML('beforeend', dripSVG(140, '#ffb700'));
+    t4.insertAdjacentHTML('beforeend', dripSVG(110, '#ffb700'));
     for (let i = 0; i < 6; i++) {
       const p = document.createElement('i');
       p.className = 'pearl';
@@ -149,6 +227,7 @@
       p.style.top = (38 + Math.random() * 42) + '%';
       t1.appendChild(p);
     }
+    applyCakePhoto();
   }
 
   const CANDLE_SPEC = [
@@ -196,25 +275,42 @@
     }
   }
 
-  /* ---------------- the birthday letter (running text) ---------------- */
+  /* ---------------- the birthday letter (running text + voice) ------
+     Each line appears, then its recorded voice clip plays; the next
+     line waits until that clip ends, so the words and the voice line
+     up. The background song is turned down (not stopped) underneath
+     the voice, and the old twinkly blips are gone. */
   const MESSAGE_LINES = [
-    { t: 'Happy 22nd birthday! 🎂❤️', cls: 'lead' },
-    { t: 'You’re 22 now! You’ve come so far, and I’m really proud of you.' },
-    { t: 'I believe in you so much, so please believe in yourself too.' },
-    { t: 'No matter what happens, don’t give up on yourself.' },
-    { t: 'I hope you have the happiest birthday and that this new year of your life brings you lots of happiness, good memories, and beautiful moments.' },
-    { t: 'I’ll always be here to support you, no matter what happens.' },
-    { t: 'You’ve got this!', cls: 'end' }
+    { t: 'Happy 22nd birthday! 🎂❤️', cls: 'lead', voice: 'MP3/Happy 22nd birthday!.mp4' },
+    { t: 'You’re 22 now! You’ve come so far, and I’m really proud of you.', voice: 'MP3/You’re 22 now! You’ve come so far, and I’m really proud of you.mp4' },
+    { t: 'I believe in you so much, so please believe in yourself too.', voice: 'MP3/I believe in you so much, so please believe in yourself too.mp4' },
+    { t: 'No matter what happens, don’t give up on yourself.', voice: 'MP3/No matter what happens, don’t give up on yourself..mp4' },
+    { t: 'I hope you have the happiest birthday and that this new year of your life brings you lots of happiness, good memories, and beautiful moments.', voice: 'MP3/I hope you have the happiest birthday and that this new year of your life brings you lots of happiness, good memories, and beautiful moments.mp4' },
+    { t: 'I’ll always be here to support you, no matter what happens.', voice: 'MP3/I’ll always be here to support you, no matter what happens.mp4' },
+    { t: 'You’ve got this!', cls: 'end', voice: 'MP3/You’ve got this!.mp4' }
   ];
-  let runTimer = null;
+  const VOICE_GAP = 700;   /* breathing room after a clip before the next line */
+  let runTimer = null, runClips = null, runSeq = 0;
 
-  function stopRunText() { clearInterval(runTimer); runTimer = null; }
+  function stopRunText() {
+    runSeq++;
+    if (runTimer) { clearTimeout(runTimer); runTimer = null; }
+    if (runClips) {
+      runClips.forEach(function (a) {
+        if (!a) return;
+        try { a.pause(); a.currentTime = 0; } catch (e) {}
+      });
+      runClips = null;
+    }
+  }
 
   function startRunText() {
     stopRunText();
     const card = document.getElementById('runCard');
     const box = document.getElementById('runText');
     if (!card || !box) return;
+    const myToken = runSeq;
+
     box.innerHTML = '';
     card.scrollTop = 0;
     MESSAGE_LINES.forEach(function (l) {
@@ -224,15 +320,30 @@
       box.appendChild(d);
     });
     const lines = Array.prototype.slice.call(box.children);
-    let i = 0;
-    runTimer = setInterval(function () {
+
+    /* preload the voice clips and hush the background song */
+    runClips = MESSAGE_LINES.map(function (l) {
+      if (!l.voice) return null;
+      const a = new Audio();
+      a.preload = 'auto';
+      a.src = l.voice;
+      a.load();
+      return a;
+    });
+    /* just lower the song a little under the voice — it keeps playing */
+    if (window.BD_AUDIO && BD_AUDIO.duckMusic) BD_AUDIO.duckMusic(true);
+
+    function revealLine(i) {
+      if (myToken !== runSeq) return;
       if (i >= lines.length) {
-        stopRunText();
+        if (window.BD_AUDIO && BD_AUDIO.duckMusic) BD_AUDIO.duckMusic(false);
         document.dispatchEvent(new CustomEvent('bd:letterDone'));
         return;
       }
+
       const line = lines[i];
       line.classList.add('in');
+
       /* gently keep the newest line in view */
       const target = Math.max(0, line.offsetTop - card.clientHeight * .55);
       const from = card.scrollTop;
@@ -243,9 +354,29 @@
         card.scrollTop = from + (target - from) * e;
         if (k >= 1) clearInterval(gIv);
       }, 16);
-      if (window.BD_AUDIO && i % 2 === 0) BD_AUDIO.sparkle();
-      i++;
-    }, 1700);
+
+      let advanced = false;
+      function next() {
+        if (advanced || myToken !== runSeq) return;
+        advanced = true;
+        runTimer = setTimeout(function () { revealLine(i + 1); }, VOICE_GAP);
+      }
+
+      const clip = runClips[i];
+      if (clip) {
+        try { clip.currentTime = 0; } catch (e) {}
+        clip.addEventListener('ended', next, { once: true });
+        clip.addEventListener('error', function () {
+          setTimeout(next, 1600);   /* missing file → keep the pace */
+        }, { once: true });
+        const p = clip.play();
+        if (p && p.catch) p.catch(function () { setTimeout(next, 1600); });
+      } else {
+        runTimer = setTimeout(next, 1700);
+      }
+    }
+
+    revealLine(0);
   }
 
   /* ---------------- fireworks / sparkles helpers ---------------- */
@@ -277,7 +408,6 @@
     stageReady = false;
     wishStage = 'idle';
     stopFireworks(); stopSparkles(); stopRunText();
-    if (window.BD_AUDIO) BD_AUDIO.padOff();
     messageEl().classList.remove('show');
     restoreLetters();
     caption('');
@@ -296,9 +426,9 @@
     });
     const fg = document.getElementById('floorGlow');
     fg.classList.remove('in', 'flash');
-    const nm = document.getElementById('cakeName');
-    if (nm) nm.classList.remove('show');
     decorateCake();
+    if (window.BD_BALLOONS) BD_BALLOONS.reset();
+    if (window.BD_GIFT) BD_GIFT.reset();
   }
 
   async function runSequence() {
@@ -319,7 +449,8 @@
     const tiers = [
       { sel: '.t1', g: 3000, rest: .28, k: 520, c: 22 },  /* bottom: firm landing */
       { sel: '.t2', g: 3000, rest: .34, k: 560, c: 23 },
-      { sel: '.t3', g: 3000, rest: .42, k: 600, c: 24 }   /* top: playful bounce */
+      { sel: '.t3', g: 3000, rest: .40, k: 590, c: 24 },
+      { sel: '.t4', g: 3000, rest: .46, k: 620, c: 25 }   /* top: playful bounce */
     ];
     for (let i = 0; i < tiers.length; i++) {
       const cfg = tiers[i];
@@ -329,7 +460,6 @@
       await sleep(300); if (!ok()) return;
     }
 
-    document.getElementById('cakeName').classList.add('show');
     if (window.BD_AUDIO) BD_AUDIO.sparkle();
     await sleep(900); if (!ok()) return;
 
@@ -412,7 +542,11 @@
       await sleep(candles.length * 130 + 900); if (!ok()) return;
 
       wishStage = 'done';
-      revealMessage();
+      if (window.BD_BALLOONS) {
+        BD_BALLOONS.start(function () { if (ok()) revealMessage(); });
+      } else {
+        revealMessage();
+      }
     });
   }
 
@@ -423,7 +557,6 @@
     if (window.BD_AUDIO) BD_AUDIO.chime();
     setTimeout(function () { if (window.BD_FX) BD_FX.confettiBurst(); }, 380);
     setTimeout(startFireworks, 900);
-    setTimeout(function () { if (window.BD_AUDIO) BD_AUDIO.padOn(); }, 1500);
     setTimeout(startRunText, 2600);
     caption('');
   }

@@ -6,8 +6,12 @@
 (function () {
   'use strict';
 
-  let AC = null, master = null, padNodes = null, noiseBuf = null;
+  let AC = null, master = null, noiseBuf = null;
   let muted = false;
+
+  /* the background song is a real <audio> element (not synthesized) */
+  let musicEl = document.getElementById('bgMusic');
+  const MUSIC_VOL = .38, MUSIC_DUCK = .10;
 
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function read(k)     { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -108,41 +112,33 @@
     });
     setTimeout(sparkle, 500);
   }
-  function padOn() {
-    const c = ac(); if (!c || padNodes) return;
-    try {
-      const g = c.createGain(); g.gain.value = 0;
-      const fl = c.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 900;
-      const oscs = [220, 277.18, 329.63].map(function (f) {
-        const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-        o.connect(fl); o.start(); return o;
-      });
-      fl.connect(g).connect(master);
-      g.gain.linearRampToValueAtTime(muted ? 0 : .05, c.currentTime + 2.5);
-      padNodes = { g: g, oscs: oscs };
-    } catch (e) {}
-  }
-  function padOff() {
-    if (!padNodes || !AC) return;
-    try {
-      var n = padNodes;
-      n.g.gain.linearRampToValueAtTime(0, AC.currentTime + .7);
-      n.oscs.forEach(function (o) { o.stop(AC.currentTime + .8); });
-    } catch (e) {}
-    padNodes = null;
-  }
   function setMuted(m) {
     muted = m;
     store('priya-bd-muted', m ? '1' : '0');
     if (AC && master) {
       try { master.gain.linearRampToValueAtTime(m ? 0 : .8, AC.currentTime + .12); } catch (e) {}
     }
+    if (musicEl) { try { musicEl.muted = m; } catch (e) {} }
+  }
+
+  /* --- background song (your MP3) --- */
+  function musicStart() {
+    if (!musicEl) return;
+    try { musicEl.volume = MUSIC_VOL; musicEl.muted = muted; } catch (e) {}
+    const p = musicEl.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+  function musicStop() { if (musicEl) { try { musicEl.pause(); } catch (e) {} } }
+  function duckMusic(on) {
+    if (!musicEl) return;
+    try { musicEl.volume = on ? MUSIC_DUCK : MUSIC_VOL; } catch (e) {}
   }
 
   window.BD_AUDIO = {
     unlock: ac,
     thud: thud, sparkle: sparkle, ignite: ignite, pop: pop, click: click,
-    whoosh: whoosh, chime: chime, padOn: padOn, padOff: padOff,
+    whoosh: whoosh, chime: chime,
+    musicStart: musicStart, musicStop: musicStop, duckMusic: duckMusic,
     isMuted: function () { return muted; },
     setMuted: setMuted
   };

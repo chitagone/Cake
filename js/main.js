@@ -19,6 +19,7 @@
   ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
     window.addEventListener(ev, function () {
       if (window.BD_AUDIO) BD_AUDIO.unlock();
+      if (started && window.BD_AUDIO && BD_AUDIO.musicStart) BD_AUDIO.musicStart();
     }, { passive: true });
   });
 
@@ -45,6 +46,7 @@
     started = true;
     if (window.BD_COUNTDOWN) BD_COUNTDOWN.stop();
     $('#countdownScreen').classList.add('off');
+    if (window.BD_AUDIO && BD_AUDIO.musicStart) BD_AUDIO.musicStart();
     setTimeout(function () { window.BD_CAKE.start(); }, 850);
   }
 
@@ -87,4 +89,39 @@
   }
 
   if (window.BD_CAKE) BD_CAKE.decorate();
+
+  /* personal voice note — the button appears on its own once the file
+     MP3/wish.mp3 exists; until then it stays hidden */
+  (function voiceWish() {
+    const v = document.getElementById('voiceNote');
+    const b = document.getElementById('voiceBtn');
+    if (!v || !b) return;
+    const IDLE = '▶&nbsp;hear my wish&nbsp;<span>🎙️</span>';
+    function show() {
+      if (!b.hidden) return;
+      b.hidden = false;
+      requestAnimationFrame(function () { b.classList.add('in'); });
+    }
+    v.addEventListener('canplaythrough', show, { once: true });
+    v.addEventListener('loadeddata', show, { once: true });
+    v.addEventListener('error', function () { b.hidden = true; });
+    b.addEventListener('click', function () {
+      if (v.paused) {
+        v.play().catch(function () {});
+        b.classList.add('playing');
+        b.innerHTML = '❚❚&nbsp;pause my wish';
+        if (window.BD_AUDIO && BD_AUDIO.duckMusic) BD_AUDIO.duckMusic(true);
+      } else {
+        v.pause();
+        b.classList.remove('playing');
+        b.innerHTML = IDLE;
+        if (window.BD_AUDIO && BD_AUDIO.duckMusic) BD_AUDIO.duckMusic(false);
+      }
+    });
+    v.addEventListener('ended', function () {
+      b.classList.remove('playing');
+      b.innerHTML = IDLE;
+      if (window.BD_AUDIO && BD_AUDIO.duckMusic) BD_AUDIO.duckMusic(false);
+    });
+  })();
 })();

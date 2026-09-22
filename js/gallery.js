@@ -120,13 +120,18 @@
   document.getElementById('lbPrev').addEventListener('click', function () { step(-1); });
   document.getElementById('lbNext').addEventListener('click', function () { step(1); });
 
-  /* the finale: once the wish is blown out and the birthday letter has
-     fully played (bd:letterDone from cake.js), the gallery reveals
-     itself as the last part of the surprise */
-  document.addEventListener('bd:letterDone', function () {
+  /* the finale: once the wish is blown out, the balloon game is popped,
+     and the gift is opened, the gallery reveals itself as the last
+     part of the surprise (bd:giftDone from gift.js) */
+  function revealGallery() {
     setTimeout(function () {
       if (!gallery.classList.contains('open')) openGallery();
-    }, 2200);
+    }, 1500);
+  }
+  document.addEventListener('bd:giftDone', revealGallery);
+  document.addEventListener('bd:letterDone', function () {
+    if (window.BD_GIFT) return;   /* the gift reveal chains into the gallery */
+    revealGallery();
   });
 
   /* keys: Esc closes (lightbox first), arrows page the carousel —
